@@ -82,6 +82,27 @@ defmodule HoodMelville do
     Enum.reduce(list, empty(), fn x, acc -> snoc(acc, x) end)
   end
 
+  @spec to_list(queue()) :: list()
+  def to_list({lenf, front, state, _lenr, reversed}) do
+    case state do
+      {:reversing, _ok, ws, xs, ys, zs} ->
+        n = lenf - Kernel.length(front) - 1
+
+        front ++
+          Enum.drop(Enum.reverse(ws) ++ xs ++ Enum.reverse(ys) ++ zs, n) ++ Enum.reverse(reversed)
+
+      {:appending, _ok, xs, ys} ->
+        n = lenf - Kernel.length(front) - 1
+        front ++ Enum.drop(Enum.reverse(xs) ++ ys, n) ++ Enum.reverse(reversed)
+
+      {:idle} ->
+        front ++ Enum.reverse(reversed)
+
+      {:done, xs} ->
+        front ++ xs ++ Enum.reverse(reversed)
+    end
+  end
+
   @spec to_list_naive(queue()) :: list()
   def to_list_naive(queue, acc \\ []) do
     case uncons(queue) do
