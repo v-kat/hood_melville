@@ -2,6 +2,27 @@ defmodule HoodMelvilleTest do
   use ExUnit.Case
   use PropCheck
 
+  test "empty list has no tail" do
+    res = HoodMelville.new() |> HoodMelville.tail()
+    assert res == {:error, :empty_queue}
+  end
+
+  test "empty list is empty" do
+    assert HoodMelville.empty() |> HoodMelville.is_empty()
+  end
+
+  property "inserting two elements in queue then tail and get results in second element",
+    numtests: 100 do
+    forall {xs, ys} <- {integer(), integer()} do
+      queue =
+        HoodMelville.new()
+        |> HoodMelville.insert(xs)
+        |> HoodMelville.insert(ys)
+
+      equals(HoodMelville.get(HoodMelville.tail(queue)), ys)
+    end
+  end
+
   property "to_list and from_list are inverses", numtests: 500 do
     forall xs <- noshrink(list(integer())) do
       ys = HoodMelville.from_list(xs)

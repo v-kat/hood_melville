@@ -10,67 +10,13 @@ defmodule HoodMelville do
 
   @type queue :: {integer(), [term()], rotation_state(), integer(), [term()]}
 
-  @spec exec(rotation_state()) :: rotation_state()
-  def exec({:reversing, ok, [x | xs], ys, [z | zs], as}) do
-    {:reversing, ok + 1, xs, [x | ys], zs, [z | as]}
-  end
-
-  def exec({:reversing, ok, [], ys, [z], as}) do
-    {:appending, ok, ys, [z | as]}
-  end
-
-  def exec({:appending, 0, _xs, ys}) do
-    {:done, ys}
-  end
-
-  def exec({:appending, ok, [x | xs], ys}) do
-    {:appending, ok - 1, xs, [x | ys]}
-  end
-
-  def exec(state) do
-    state
-  end
-
-  @spec invalidate(rotation_state()) :: rotation_state()
-  def invalidate({:reversing, ok, ws, xs, ys, zs}) do
-    {:reversing, ok - 1, ws, xs, ys, zs}
-  end
-
-  def invalidate({:appending, 0, _xs, [_y | ys]}) do
-    {:done, ys}
-  end
-
-  def invalidate({:appending, ok, xs, ys}) do
-    {:appending, ok - 1, xs, ys}
-  end
-
-  def invalidate(state) do
-    state
-  end
-
-  @spec exec2(queue()) :: queue()
-  def exec2({lenf, f, state, lenr, r}) do
-    case exec(exec(state)) do
-      {:done, newf} -> {lenf, newf, {:idle}, lenr, r}
-      newstate -> {lenf, f, newstate, lenr, r}
-    end
-  end
-
-  @spec check(queue()) :: queue()
-  def check({lenf, f, _state, lenr, r} = q) do
-    if lenr <= lenf do
-      exec2(q)
-    else
-      new_state = {:reversing, 0, f, [], r, []}
-      exec2({lenf + lenr, f, new_state, 0, []})
-    end
-  end
-
   @empty {0, [], {:idle}, 0, []}
   @spec empty() :: queue()
-  def empty() do
+  def empty do
     @empty
   end
+
+  defdelegate new(), to: HoodMelville, as: :empty
 
   @spec is_empty(queue()) :: boolean()
   def is_empty({lenf, _f, _state, _lenr, _r}) do
@@ -125,10 +71,14 @@ defmodule HoodMelville do
     check({lenf, f, state, lenr + 1, [x | r]})
   end
 
+  defdelegate insert(queue, item), to: HoodMelville, as: :snoc
+
   @spec head(queue()) :: term() | {:error, :empty_queue}
   def head({_lenf, [], _state, _lenr, _r}) do
     {:error, :empty_queue}
   end
+
+  defdelegate get(queue), to: HoodMelville, as: :head
 
   def head({_lenf, [x | _f], _state, _lenr, _r}) do
     x
@@ -141,5 +91,61 @@ defmodule HoodMelville do
 
   def tail({lenf, [_x | f], state, lenr, r}) do
     check({lenf - 1, f, invalidate(state), lenr, r})
+  end
+
+  # @spec exec(rotation_state()) :: rotation_state()
+  defp exec({:reversing, ok, [x | xs], ys, [z | zs], as}) do
+    {:reversing, ok + 1, xs, [x | ys], zs, [z | as]}
+  end
+
+  defp exec({:reversing, ok, [], ys, [z], as}) do
+    {:appending, ok, ys, [z | as]}
+  end
+
+  defp exec({:appending, 0, _xs, ys}) do
+    {:done, ys}
+  end
+
+  defp exec({:appending, ok, [x | xs], ys}) do
+    {:appending, ok - 1, xs, [x | ys]}
+  end
+
+  defp exec(state) do
+    state
+  end
+
+  # @spec invalidate(rotation_state()) :: rotation_state()
+  defp invalidate({:reversing, ok, ws, xs, ys, zs}) do
+    {:reversing, ok - 1, ws, xs, ys, zs}
+  end
+
+  defp invalidate({:appending, 0, _xs, [_y | ys]}) do
+    {:done, ys}
+  end
+
+  defp invalidate({:appending, ok, xs, ys}) do
+    {:appending, ok - 1, xs, ys}
+  end
+
+  defp invalidate(state) do
+    state
+  end
+
+  # @spec exec2(queue()) :: queue()
+  defp exec2({lenf, f, state, lenr, r}) do
+    case exec(exec(state)) do
+      {:done, newf} -> {lenf, newf, {:idle}, lenr, r}
+      newstate -> {lenf, f, newstate, lenr, r}
+    end
+  end
+
+  # @spec check(queue()) :: queue()
+  defp check({lenf, f, _state, lenr, r} = q) do
+    if lenr <= lenf do
+      exec2(q)
+    else
+      new_state = {:reversing, 0, f, [], r, []}
+      exec2({lenf + lenr, f, new_state, 0, []})
+    end
   end
 end

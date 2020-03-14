@@ -7,7 +7,20 @@ defmodule HoodMelville.MixProject do
       version: "0.1.0",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      description: description(),
+      package: package(),
+      test_coverage: [tool: ExCoveralls],
+      # Docs
+      name: "Hood Melville Queue",
+      source_url: "https://github.com/IRog/hood_melville",
+      homepage_url: "https://github.com/IRog/hood_melville",
+      docs: [
+        # The main page in the docs
+        main: "HoodMelville",
+        # logo: "path/to/logo.png",
+        extras: ["README.md"]
+      ]
     ]
   end
 
@@ -23,10 +36,24 @@ defmodule HoodMelville.MixProject do
     [
       {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false},
       {:propcheck, "~> 1.1", only: [:test, :dev]},
+      {:excoveralls, "~> 0.10", only: :test},
+      {:credo, "~> 1.2", only: [:dev, :test], runtime: false},
       {:benchee, "~> 1.0", only: :dev},
-      {:benchee_html, "~> 1.0", only: :dev}
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:benchee_html, "~> 1.0", only: :dev},
+      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
+    ]
+  end
+
+  defp description() do
+    "Real-time purely functional persistent (in the data-structure sense not that it's goes to disk) queue"
+  end
+
+  defp package() do
+    [
+      name: "hood_melville",
+      files: ~w(lib .formatter.exs mix.exs README* LICENSE*),
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/IRog/hood_melville"}
     ]
   end
 end
