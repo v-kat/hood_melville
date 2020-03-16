@@ -30,4 +30,4 @@ queue =
 HoodMelville.get(queue)
 ```
 
-See the linked docs for more function info and/or /tests
+See the linked docs for more function info and/or the test directory 
