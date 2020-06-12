@@ -7,7 +7,7 @@
 
 ## Description
 
-Real-time purely functional persistent (in the data-structure sense not that it goes to disk) queue. Will never get into a bad state unlike the erlang queue although has lower throughput for good states. Trades latency for throughput.
+Real-time purely functional persistent (in the data-structure sense not that it goes to disk) queue. Will never get into a bad state unlike the erlang queue although has lower throughput for good states. Optimized for consistent latency instead of throughput.
 
 ## Installation
 
